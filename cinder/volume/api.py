@@ -215,6 +215,8 @@ class API(base.Base):
 
         filter_properties = {}
 
+        msg = _("given volume_type overridden during volume create with source_volid")
+        LOG.warn(msg)
         self._cast_create_volume(context, request_spec, filter_properties)
 
         return volume
