@@ -177,7 +177,7 @@ class API(base.Base):
         if not volume_type and not source_volume:
             volume_type = volume_types.get_default_volume_type()
 
-        if not volume_type and source_volume:
+        if source_volume:
             volume_type_id = source_volume['volume_type_id']
         else:
             volume_type_id = volume_type.get('id')
