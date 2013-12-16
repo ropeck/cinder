@@ -177,6 +177,11 @@ class API(base.Base):
         if not volume_type and not source_volume:
             volume_type = volume_types.get_default_volume_type()
 
+	if source_volume and volume_type:
+            if source_volume['volume_type_id'] != volume_type.get('id'):
+              msg = _("Volume_type must match Source_volume type")
+              raise exception.InvalidVolume(reason=msg)
+	    
         if not volume_type and source_volume:
             volume_type_id = source_volume['volume_type_id']
         else:
