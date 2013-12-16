@@ -165,6 +165,53 @@ class VolumeTestCase(test.TestCase):
                           None,
                           test_meta)
 
+    def test_create_volume_with_volume_type_and_source_volid(self):
+        """Test volume creation from another volume setting volumetype."""
+        def fake_reserve(context, expire=None, project_id=None, **deltas):
+            return ["RESERVATION"]
+
+        def fake_commit(context, reservations, project_id=None):
+            pass
+
+        def fake_rollback(context, reservations, project_id=None):
+            pass
+
+        self.stubs.Set(QUOTAS, "reserve", fake_reserve)
+        self.stubs.Set(QUOTAS, "commit", fake_commit)
+        self.stubs.Set(QUOTAS, "rollback", fake_rollback)
+
+        volume_api = cinder.volume.api.API()
+
+        vol_type = "voltypeA"
+        db.volume_type_create(context.get_admin_context(),
+                              dict(name=vol_type, extra_specs={}))
+
+        db_vol_typeA = db.volume_type_get_by_name(context.get_admin_context(),
+                                                 vol_type)
+
+        vol_type = "voltypeB"
+        db.volume_type_create(context.get_admin_context(),
+                              dict(name=vol_type, extra_specs={}))
+
+        db_vol_typeB = db.volume_type_get_by_name(context.get_admin_context(),
+                                                 vol_type)
+
+        # Create volume with specific volume type
+        srcvolume = volume_api.create(self.context,
+                                   1,
+                                   'srcname',
+                                   'description',
+                                   volume_type=db_vol_typeA)
+
+        # make another with source but different volumetype
+        self.assertRaises(exception.InvalidVolume,
+        	volume_api.create,self.context,
+                                   1,
+                                   'srcname',
+                                   'description',
+				   source_volume=srcvolume,
+                                   volume_type=db_vol_typeB)
+
     def test_create_volume_with_volume_type(self):
         """Test volume creation with default volume type."""
         def fake_reserve(context, expire=None, project_id=None, **deltas):
