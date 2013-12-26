@@ -427,8 +427,16 @@ class ExtractVolumeRequestTask(base.CinderTask):
             volume_type_id = snapshot['volume_type_id']
         elif backup_source_volume is not None:
             volume_type_id = backup_source_volume['volume_type_id']
-        else:
+        elif source_volume is None:
             volume_type_id = volume_type.get('id')
+        else:  # volume_type is set and source_volume is not None
+            volume_type_id = source_volume['volume_type_id']
+            if volume_type_id != volume_type.get('id'):
+                msg = _("Volume type will be changed to "
+                        "be the same as the source volume.")
+                LOG.warn(msg)
+
+
 
         return volume_type_id
 
